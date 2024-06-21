@@ -1,0 +1,51 @@
+import requests
+from bs4 import BeautifulSoup
+import random
+
+def get_random_wikipedia_article():
+    """Get a random Wikipedia article and its summary."""
+    # URL for the Wikipedia random article API
+    api_url = "https://en.wikipedia.org/w/api.php?action=query&list=random&format=json&rnnamespace=0&rnlimit=1"
+
+    # Make a request to the API
+    response = requests.get(api_url)
+    data = response.json()
+
+    # Get the title of the random article
+    article_title = data['query']['random'][0]['title']
+
+    # Get the URL of the article
+    article_url = f"https://en.wikipedia.org/wiki/{article_title.replace(' ', '_')}"
+
+    # Use BeautifulSoup to scrape the summary from the article's page
+    article_page = requests.get(article_url)
+    soup = BeautifulSoup(article_page.text, 'html.parser')
+    summary_paragraphs = soup.select(".mw-parser-output p")  # Assuming the summary is in paragraphs
+
+    # Combine the first few paragraphs to create the summary
+    summary = ' '.join([paragraph.get_text() for paragraph in summary_paragraphs[:3]])
+
+    return article_title, summary
+
+def play_wikipedia_guessing_game():
+    """Play the Wikipedia guessing game."""
+    print("Welcome to the Wikipedia Guessing Game!")
+    print("Can you guess the article based on its summary?\n")
+
+    # Get a random Wikipedia article and its summary
+    article_title, summary = get_random_wikipedia_article()
+
+    # Display the summary
+    print(f"Summary: {summary}\n")
+
+    # Get the player's guess
+    player_guess = input("Your guess: ")
+
+    # Check if the guess is correct
+    if player_guess.lower() == article_title.lower():
+        print(f"Congratulations! You guessed the article correctly: '{article_title}'")
+    else:
+        print(f"Sorry, the correct answer was '{article_title}'")
+
+if __name__ == "__main__":
+    play_wikipedia_guessing_game()
